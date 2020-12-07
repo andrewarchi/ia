@@ -23,19 +23,24 @@ func DownloadTorrents(ids []string, dir string) error {
 	if err != nil {
 		return err
 	}
+
 	for i, id := range ids {
 		url := fmt.Sprintf("https://archive.org/download/%s/%s_archive.torrent", id, id)
-		fmt.Printf("(%d/%d) Adding %s\n", i, len(ids), id)
+		fmt.Printf("(%d/%d) Adding %s\n", i+1, len(ids), id)
 		filename := filepath.Join(dir, path.Base(url))
 		if err := DownloadFile(url, filename); err != nil {
 			return err
 		}
+
 		t, err := c.AddTorrentFromFile(filename)
 		if err != nil {
 			return err
 		}
 		t.DownloadAll()
+		if i%15 == 14 {
+			c.WaitAll()
+		}
 	}
-	fmt.Println(c.WaitAll())
+	c.WaitAll()
 	return nil
 }
