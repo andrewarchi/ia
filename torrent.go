@@ -1,4 +1,4 @@
-// Copyright (c) 2020 Andrew Archibald
+// Copyright (c) 2020-2021 Andrew Archibald
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -25,7 +25,7 @@ func DownloadTorrents(ids []string, dir string) error {
 	}
 
 	for i, id := range ids {
-		url := fmt.Sprintf("https://archive.org/download/%s/%s_archive.torrent", id, id)
+		url := "https://archive.org/download/" + id + "/" + id + "_archive.torrent"
 		fmt.Printf("(%d/%d) Adding %s\n", i+1, len(ids), id)
 		filename := filepath.Join(dir, path.Base(url))
 		if err := DownloadFile(url, filename); err != nil {

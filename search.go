@@ -1,4 +1,4 @@
-// Copyright (c) 2020 Andrew Archibald
+// Copyright (c) 2020-2021 Andrew Archibald
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,30 +9,32 @@ package ia
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
 )
 
 // Search queries the Internet Archive for the identifiers of all
 // matching items.
 func Search(query string) ([]string, error) {
-	url := fmt.Sprintf("https://archive.org/services/search/v1/scrape?q=%s&count=10000", query)
-	resp, err := http.Get(url)
+	url := "https://archive.org/services/search/v1/scrape?q=" + query + "&count=10000"
+	body, err := httpGet(url)
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("ia: http status %s", resp.Status)
-	}
-	defer resp.Body.Close()
+	defer body.Close()
 
-	type iaItem struct {
-		Identifier string `json:"identifier"`
+	type Response struct {
+		Items []struct {
+			Identifier string `json:"identifier"`
+		} `json:"items"`
+		Count int `json:"count"`
+		Total int `json:"total"`
 	}
-	var items struct {
-		Items []iaItem `json:"items"`
-	}
-	if err := json.NewDecoder(resp.Body).Decode(&items); err != nil {
+	var items Response
+	if err := json.NewDecoder(body).Decode(&items); err != nil {
 		return nil, err
+	}
+	if items.Count != items.Total {
+		// TODO handle paging
+		return nil, fmt.Errorf("ia: queried %d of %d items", items.Count, items.Total)
 	}
 
 	ids := make([]string, len(items.Items))
