@@ -2,4 +2,4 @@ module github.com/andrewarchi/ia
 
 go 1.15
 
-require github.com/anacrolix/torrent v1.24.0
+require github.com/anacrolix/torrent v1.21.0
