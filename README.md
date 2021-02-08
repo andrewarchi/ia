@@ -1,7 +1,7 @@
 # ia — Internet Archive library in Go
 
-ia is a library for querying and downloading files from the Internet
-Archive.
+ia is a library for querying, downloading, and validating files from the
+Internet Archive.
 
 ## License
 
