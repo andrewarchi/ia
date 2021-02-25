@@ -11,6 +11,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"time"
 )
 
 const TimestampFormat = "20060102150405"
@@ -25,22 +26,32 @@ func DownloadFile(url, filename string) error {
 		return nil
 	}
 
-	body, err := httpGet(url)
+	resp, err := httpGet(url)
 	if err != nil {
 		return err
 	}
-	defer body.Close()
+	defer resp.Body.Close()
 
 	f, err := os.Create(filename)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-	_, err = io.Copy(f, body)
-	return err
+	if _, err := io.Copy(f, resp.Body); err != nil {
+		return err
+	}
+
+	if mod := resp.Header.Get("Last-Modified"); mod != "" {
+		mt, err := time.Parse(time.RFC1123, mod)
+		if err != nil {
+			return err
+		}
+		return os.Chtimes(filename, mt, mt)
+	}
+	return nil
 }
 
-func httpGet(url string) (io.ReadCloser, error) {
+func httpGet(url string) (*http.Response, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -48,5 +59,5 @@ func httpGet(url string) (io.ReadCloser, error) {
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("ia: http status %s", resp.Status)
 	}
-	return resp.Body, nil
+	return resp, nil
 }

@@ -15,21 +15,21 @@ import (
 // matching items.
 func Search(query string) ([]string, error) {
 	url := "https://archive.org/services/search/v1/scrape?q=" + query + "&count=10000"
-	body, err := httpGet(url)
+	resp, err := httpGet(url)
 	if err != nil {
 		return nil, err
 	}
-	defer body.Close()
+	defer resp.Body.Close()
 
-	type Response struct {
+	type Scrape struct {
 		Items []struct {
 			Identifier string `json:"identifier"`
 		} `json:"items"`
 		Count int `json:"count"`
 		Total int `json:"total"`
 	}
-	var items Response
-	if err := json.NewDecoder(body).Decode(&items); err != nil {
+	var items Scrape
+	if err := json.NewDecoder(resp.Body).Decode(&items); err != nil {
 		return nil, err
 	}
 	if items.Count != items.Total {
