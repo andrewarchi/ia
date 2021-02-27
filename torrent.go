@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 
 	"github.com/anacrolix/torrent"
+	"github.com/anacrolix/torrent/storage"
 )
 
 // DownloadTorrents downloads the named Internet Archive items via
@@ -19,6 +20,7 @@ import (
 func DownloadTorrents(ids []string, dir string) error {
 	conf := torrent.NewDefaultClientConfig()
 	conf.DataDir = dir
+	conf.DefaultStorage = storage.NewMMap(dir)
 	c, err := torrent.NewClient(conf)
 	if err != nil {
 		return err
