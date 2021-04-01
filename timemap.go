@@ -1,4 +1,4 @@
-// Copyright (c) 2020 Andrew Archibald
+// Copyright (c) 2020-2021 Andrew Archibald
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,45 +8,56 @@ package ia
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
+	"strings"
 )
 
-type TimeMap struct {
-	URLKey     string
-	Timestamp  string
-	Original   string
-	MIMEType   string
-	StatusCode string
-	Digest     string
-	Redirect   string
-	RobotFlags string
-	Length     string
-	Offset     string
-	Filename   string
+// TimemapOptions contains options for a timemap API call.
+type TimemapOptions struct {
+	MatchPrefix bool     // whether url is a prefix (* wildcard is appended)
+	Collapse    string   // field to collapse by; earliest captures with unique field is kept
+	Fields      []string // e.g., urlkey,timestamp,endtimestamp,original,mimetype,statuscode,digest,redirect,robotflags,length,offset,filename,groupcount,uniqcount
+	Limit       int      // e.g., 100000
 }
 
-func GetTimeMap(url string) ([]TimeMap, error) {
-	res, err := http.Get("https://web.archive.org/web/timemap/json/" + url)
+// GetTimemap gets a list of Internet Archive captures of the given URL.
+func GetTimemap(pageURL string, options *TimemapOptions) ([][]string, error) {
+	// Timemap API, as observed on https://web.archive.org/web/*/URL/*
+
+	q := make(url.Values)
+	q.Set("url", pageURL)
+	q.Set("output", "json") // other values: "csv" and omitted
+	if options.MatchPrefix {
+		q.Set("matchType", "prefix") // other values unknown
+	}
+	if options.Collapse != "" {
+		q.Set("collapse", options.Collapse)
+	}
+	if len(options.Fields) != 0 {
+		q.Set("fl", strings.Join(options.Fields, ","))
+	}
+	if options.Limit > 0 {
+		q.Set("limit", strconv.Itoa(options.Limit))
+	}
+
+	resp, err := http.Get("https://web.archive.org/web/timemap/?" + q.Encode())
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
-	var lines [][]string
-	if err := json.NewDecoder(res.Body).Decode(&lines); err != nil {
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("ia: http status %s", resp.Status)
+	}
+
+	var timemap [][]string
+	if err := json.NewDecoder(resp.Body).Decode(&timemap); err != nil {
 		return nil, err
 	}
-	if len(lines) == 0 {
-		return nil, errors.New("ia: empty response")
-	}
-	timemap := make([]TimeMap, len(lines)-1)
-	for i, line := range lines[1:] {
-		if len(line) != 11 {
-			return nil, fmt.Errorf("ia: time map entry %d not length 11", i)
-		}
-		timemap[i] = TimeMap{line[0], line[1], line[2], line[3], line[4],
-			line[5], line[6], line[7], line[8], line[9], line[10]}
+	if len(timemap) >= 1 {
+		timemap = timemap[1:] // Skip header row
 	}
 	return timemap, nil
 }
