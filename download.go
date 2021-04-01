@@ -7,8 +7,6 @@
 package ia
 
 import (
-	"bytes"
-	"crypto/sha1"
 	"fmt"
 	"io"
 	"net/http"
@@ -29,20 +27,8 @@ func DownloadFile(url, filename string) error {
 func DownloadFileChecked(url, filename string, sha1Sum []byte) error {
 	// Skip existing
 	if _, err := os.Stat(filename); err == nil {
-		// Check that existing file matches expected checksum
 		if sha1Sum != nil {
-			f, err := os.Open(filename)
-			if err != nil {
-				return err
-			}
-			defer f.Close()
-			h := sha1.New()
-			if _, err := io.Copy(h, f); err != nil {
-				return err
-			}
-			if s := h.Sum(nil); !bytes.Equal(s, sha1Sum) {
-				return fmt.Errorf("ia: validate %s: SHA-1 sum on disk %x does not match %x in header", url, s, sha1Sum)
-			}
+			return ValidateFile(filename, nil, sha1Sum, nil)
 		}
 		// TODO check ETag, if it is a checksum
 		return nil
@@ -59,7 +45,11 @@ func DownloadFileChecked(url, filename string, sha1Sum []byte) error {
 		return err
 	}
 	defer f.Close()
-	if _, err := io.Copy(f, resp.Body); err != nil {
+	var r io.Reader = resp.Body
+	if sha1Sum != nil {
+		r = NewReadValidator(r, url, nil, sha1Sum, nil)
+	}
+	if _, err := io.Copy(f, r); err != nil {
 		return err
 	}
 
