@@ -7,6 +7,8 @@
 package ia
 
 import (
+	"bytes"
+	"crypto/sha1"
 	"fmt"
 	"io"
 	"net/http"
@@ -21,9 +23,28 @@ func PageURL(url, timestamp string) string {
 }
 
 func DownloadFile(url, filename string) error {
-	// TODO check ETag and IA digest
+	return DownloadFileChecked(url, filename, nil)
+}
+
+func DownloadFileChecked(url, filename string, sha1Sum []byte) error {
+	// Skip existing
 	if _, err := os.Stat(filename); err == nil {
-		// Skip existing
+		// Check that existing file matches expected checksum
+		if sha1Sum != nil {
+			f, err := os.Open(filename)
+			if err != nil {
+				return err
+			}
+			defer f.Close()
+			h := sha1.New()
+			if _, err := io.Copy(h, f); err != nil {
+				return err
+			}
+			if s := h.Sum(nil); !bytes.Equal(s, sha1Sum) {
+				return fmt.Errorf("ia: validate %s: SHA-1 sum on disk %x does not match %x in header", url, s, sha1Sum)
+			}
+		}
+		// TODO check ETag, if it is a checksum
 		return nil
 	}
 
