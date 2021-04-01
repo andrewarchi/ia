@@ -21,6 +21,7 @@ func PageURL(url, timestamp string) string {
 }
 
 func DownloadFile(url, filename string) error {
+	// TODO check ETag and IA digest
 	if _, err := os.Stat(filename); err == nil {
 		// Skip existing
 		return nil
@@ -41,7 +42,11 @@ func DownloadFile(url, filename string) error {
 		return err
 	}
 
-	if mod := resp.Header.Get("Last-Modified"); mod != "" {
+	mod := resp.Header.Get("Last-Modified")
+	if mod == "" {
+		mod = resp.Header.Get("X-Archive-Orig-Last-Modified")
+	}
+	if mod != "" {
 		mt, err := time.Parse(time.RFC1123, mod)
 		if err != nil {
 			return err
