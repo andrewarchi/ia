@@ -1,6 +1,6 @@
 module github.com/andrewarchi/ia
 
-go 1.15
+go 1.16
 
 require (
 	github.com/anacrolix/torrent v1.25.1
