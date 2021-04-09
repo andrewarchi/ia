@@ -114,8 +114,8 @@ github.com/anacrolix/utp v0.0.0-20180219060659-9e0e1d1d0572/go.mod h1:MDwc+vsGEq
 github.com/anacrolix/utp v0.1.0 h1:FOpQOmIwYsnENnz7tAGohA+r6iXpRjrq8ssKSre2Cp4=
 github.com/anacrolix/utp v0.1.0/go.mod h1:MDwc+vsGEq7RMw6lr2GKOEqjWny5hO5OZXRVNaBJ2Dk=
 github.com/andrewarchi/archive v0.0.0-20210205094453-9a6f6fa5022b/go.mod h1:4eMQEeM0qZfgxjVyKYYh+Mq1D2cotLPGy2GKpofYFRo=
-github.com/andrewarchi/browser v0.0.0-20210205094827-8f813da0079a h1:5yaxzdGaV4agz0B30NOCyP8W+d3dQ8aCOAyjiGxnJZ4=
-github.com/andrewarchi/browser v0.0.0-20210205094827-8f813da0079a/go.mod h1:fIyWA87GnLlH7Gs4dVGwatgw7XIYtrMpqOvYiPFrHZs=
+github.com/andrewarchi/browser v0.0.0-20210409211550-aeb39920c5c7 h1:+YrrhuyTcT66WBhFCYJ7ltKGm1hPl93KyFd6z3K7E3M=
+github.com/andrewarchi/browser v0.0.0-20210409211550-aeb39920c5c7/go.mod h1:fIyWA87GnLlH7Gs4dVGwatgw7XIYtrMpqOvYiPFrHZs=
 github.com/andybalholm/cascadia v1.1.0/go.mod h1:GsXiBklL0woXo1j/WYWtSYYC4ouU9PqHO0sqidkEA4Y=
 github.com/andybalholm/cascadia v1.2.0/go.mod h1:YCyR8vOZT9aZ1CHEd8ap0gMVm2aFgxBp0T0eFw1RUQY=
 github.com/anmitsu/go-shlex v0.0.0-20161002113705-648efa622239/go.mod h1:2FmKhYUyUczH0OGQWaF5ceTx0UBShxjsH6f8oGKYe2c=

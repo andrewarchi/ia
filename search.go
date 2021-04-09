@@ -7,8 +7,9 @@
 package ia
 
 import (
-	"encoding/json"
 	"fmt"
+
+	"github.com/andrewarchi/browser/jsonutil"
 )
 
 // Search queries the Internet Archive for the identifiers of all
@@ -27,13 +28,15 @@ func Search(query string) ([]string, error) {
 		} `json:"items"`
 		Count int `json:"count"`
 		Total int `json:"total"`
+		// TODO fields for error response
 	}
 	var items Scrape
-	if err := json.NewDecoder(resp.Body).Decode(&items); err != nil {
+	if err := jsonutil.Decode(resp.Body, &items); err != nil {
 		return nil, err
 	}
+
+	// TODO handle paging
 	if items.Count != items.Total {
-		// TODO handle paging
 		return nil, fmt.Errorf("ia: queried %d of %d items", items.Count, items.Total)
 	}
 
